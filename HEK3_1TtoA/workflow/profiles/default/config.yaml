@@ -1,0 +1,17 @@
+set-threads:
+  star_index: 20
+  align: 20
+set-resources:
+  star_index:
+    mem: 64000MB
+    time: 180
+  align:
+    mem: 64000MB
+  rseqc_readdup:
+    mem: 5000MB
+  deseq2_init:
+    mem: 32000MB
+  pca:
+    mem: 32000MB
+  
+
