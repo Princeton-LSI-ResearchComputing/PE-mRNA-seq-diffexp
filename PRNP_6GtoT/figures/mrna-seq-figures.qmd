@@ -1,0 +1,128 @@
+---
+title: "PRNP mrna-seq-figures"
+author: "Lance Parsons"
+format: html
+---
+
+## Setup
+
+### Load libraries
+
+```{r}
+# install.packages("renv")
+# renv::restore()
+library(DESeq2)
+library(readr)
+library(dplyr)
+library(ggpubr)
+library(ggplot2)
+library(ggvenn)
+```
+
+### Configuration
+
+```{r}
+results_dir <- file.path("..", "results")
+```
+
+### Load data
+
+```{r}
+all <- readRDS(file.path(results_dir, "deseq2", "all.rds"))
+PEmax.vs.PE6max.mut_editor.diffexp <- 
+  read_tsv(file.path(results_dir, "diffexp", "PEmax-vs-PE6max-mut_editor.diffexp.symbol.tsv"))
+PE6max.vs.PE6max.mut_editor.diffexp <- 
+  read_tsv(file.path(results_dir, "diffexp", "PE6max-vs-PE6max-mut_editor.diffexp.symbol.tsv"))
+PEmax.vs.PE6max_editor.diffexp <- 
+  read_tsv(file.path(results_dir, "diffexp", "PEmax-vs-PE6max_editor.diffexp.symbol.tsv"))
+```
+
+## MA Plots
+
+```{r}
+PEmax.vs.PE6max.mut_editor.maplot <- ggpubr::ggmaplot(
+  PEmax.vs.PE6max.mut_editor.diffexp,
+  fdr = 0.05,
+  size = 0.5,
+  ylim = c(-1, 1),
+  fc = 1,
+  genenames = PEmax.vs.PE6max.mut_editor.diffexp$gene,
+  top = 0,
+  main = "PRNP: PEmax vs PE6max Mutant") +
+  ggplot2::theme(legend.position = c(0.1, 0.9)) # +
+  #ggplot2::guides(color = ggplot2::guide_legend(nrow = 1))
+
+PEmax.vs.PE6max.mut_editor.maplot
+
+ggplot2::ggsave("PEmax.vs.PE6max.mut_editor.maplot.pdf")
+```
+
+```{r}
+PE6max.vs.PE6max.mut_editor.maplot <- ggpubr::ggmaplot(
+  PE6max.vs.PE6max.mut_editor.diffexp,
+  size = 0.5,
+  fdr = 0.05,
+  ylim = c(-1, 1),
+  fc = 1,
+  genenames = PE6max.vs.PE6max.mut_editor.diffexp$gene,
+  top = 0,
+  main = "HEK3: PE6max vs PE6max Mutant") +
+  ggplot2::theme(legend.position = c(0.1, 0.9))
+
+PE6max.vs.PE6max.mut_editor.maplot
+
+ggplot2::ggsave(
+  filename = "PE6max.vs.PE6max.mut_editor.maplot.pdf")
+```
+
+
+```{r}
+PEmax.vs.PE6max_editor.maplot <- ggpubr::ggmaplot(
+  PEmax.vs.PE6max_editor.diffexp,
+  fdr = 0.05,
+  size = 0.5,
+  ylim = c(-1, 1),
+  fc = 1,
+  genenames = PEmax.vs.PE6max_editor.diffexp$gene,
+  top = 0,
+  main = "HEK3: PEmax vs PE6max") +
+  ggplot2::theme(legend.position = c(0.1, 0.9))
+
+PEmax.vs.PE6max_editor.maplot
+
+ggplot2::ggsave("PEmax.vs.PE6max_editor.maplot.pdf")
+```
+
+## Venn Diagrams
+
+```{r}
+# Generate 3 sets of 200 words
+PEmax.vs.PE6max.mut_editor.genes <-
+  PEmax.vs.PE6max.mut_editor.diffexp %>%
+  dplyr::filter(padj <= 0.05) %>%
+  pull(gene)
+PE6max.vs.PE6max.mut_editor.genes <-
+  PE6max.vs.PE6max.mut_editor.diffexp %>%
+  dplyr::filter(padj <= 0.05) %>%
+  pull(gene)
+PEmax.vs.PE6max_editor.genes <-
+  PEmax.vs.PE6max_editor.diffexp %>%
+  dplyr::filter(padj <= 0.05) %>%
+  pull(gene)
+
+x = list(
+  "PEmax vs PE6max Mutant" = PEmax.vs.PE6max.mut_editor.genes,
+  "PE6max vs PE6max Mutant" = PE6max.vs.PE6max.mut_editor.genes,
+   "PEmax vs PE6max" = PEmax.vs.PE6max_editor.genes)
+
+venn.plot <- ggvenn(
+  x, 
+  fill_color = c("#0073C2FF", "#EFC000FF", "#868686FF", "#CD534CFF"),
+  stroke_size = 0.5, set_name_size = 4
+  )
+
+ggplot2::ggsave("venn_diagram.pdf")
+venn.plot
+
+```
+
