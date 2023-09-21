@@ -1,6 +1,8 @@
 .snakemake/
 logs/
 report*.zip
+pe-mrna-diffexp-*.zip
+package_*.sh
 resources/
 data/
 results/

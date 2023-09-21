@@ -52,7 +52,7 @@ diffexp:
       #level_of_interest: PEmax
     PEmax-vs-PE6max-mut_editor: "list(\"editor_PEmax_vs_PE6max.mut\")"
     PE6max-vs-PE6max-mut_editor: "list(\"editor_PE6max_vs_PE6max.mut\")"
-    PEmax-vs-PE6max_editor: "list(\"editor_PEmax_vs_PE6max.mut\", \"editor_PE6max_vs_PE6max.mut\")"
+    PE6max-vs-PEmax_editor: "list(\"editor_PE6max_vs_PE6max.mut\", \"editor_PEmax_vs_PE6max.mut\")"
   # The default model includes all interactions among variables_of_interest
   # and batch_effects added on. For the example above this implicitly is:
   # model: ~jointly_handled + treatment_1 * treatment_2

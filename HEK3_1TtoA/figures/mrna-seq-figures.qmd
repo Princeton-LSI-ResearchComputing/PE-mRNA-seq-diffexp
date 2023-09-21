@@ -29,41 +29,42 @@ results_dir <- file.path("..", "results")
 
 ```{r}
 all <- readRDS(file.path(results_dir, "deseq2", "all.rds"))
-PEmax.vs.PE6max.mut_editor.diffexp <- 
+PE6max.vs.PEmax.mut_editor.diffexp <-
   read_tsv(file.path(results_dir, "diffexp", "PEmax-vs-PE6max-mut_editor.diffexp.symbol.tsv"))
-PE6max.vs.PE6max.mut_editor.diffexp <- 
+PE6max.vs.PE6max.mut_editor.diffexp <-
   read_tsv(file.path(results_dir, "diffexp", "PE6max-vs-PE6max-mut_editor.diffexp.symbol.tsv"))
-PEmax.vs.PE6max_editor.diffexp <- 
-  read_tsv(file.path(results_dir, "diffexp", "PEmax-vs-PE6max_editor.diffexp.symbol.tsv"))
+PE6max.vs.PEmax_editor.diffexp <-
+  read_tsv(file.path(results_dir, "diffexp", "PE6max-vs-PEmax_editor.diffexp.symbol.tsv"))
 ```
 
 ## Venn Diagram
 
 ```{r}
 # Generate 3 sets of 200 words
-PEmax.vs.PE6max.mut_editor.genes <-
-  PEmax.vs.PE6max.mut_editor.diffexp %>%
+PE6max.vs.PEmax.mut_editor.genes <-
+  PE6max.vs.PEmax.mut_editor.diffexp %>%
   dplyr::filter(padj <= 0.05) %>%
   pull(gene)
 PE6max.vs.PE6max.mut_editor.genes <-
   PE6max.vs.PE6max.mut_editor.diffexp %>%
   dplyr::filter(padj <= 0.05) %>%
   pull(gene)
-PEmax.vs.PE6max_editor.genes <-
-  PEmax.vs.PE6max_editor.diffexp %>%
+PE6max.vs.PEmax_editor.genes <-
+  PE6max.vs.PEmax_editor.diffexp %>%
   dplyr::filter(padj <= 0.05) %>%
   pull(gene)
 
-x = list(
-  "PEmax vs PE6max Mutant" = PEmax.vs.PE6max.mut_editor.genes,
+x <- list(
+  "PEmax vs PE6max Mutant" = PE6max.vs.PEmax.mut_editor.genes,
   "PE6max vs PE6max Mutant" = PE6max.vs.PE6max.mut_editor.genes,
-  "PEmax vs PE6max" = PEmax.vs.PE6max_editor.genes)
+  "PEmax vs PE6max" = PE6max.vs.PEmax_editor.genes
+)
 
 venn.plot <- ggvenn(
-  x, 
+  x,
   fill_color = c("#0073C2FF", "#EFC000FF", "#868686FF", "#CD534CFF"),
   stroke_size = 0.5, set_name_size = 4
-  )
+)
 
 ggplot2::ggsave("venn_diagram.pdf")
 venn.plot
@@ -72,42 +73,46 @@ venn.plot
 ### Fischer's Exact Test
 
 ```{r}
-genes.to.label <- intersect(PE6max.vs.PE6max.mut_editor.genes, PEmax.vs.PE6max_editor.genes)
+genes.to.label <- intersect(PE6max.vs.PE6max.mut_editor.genes, PE6max.vs.PEmax_editor.genes)
 
 # Contingency table
-n <- dim(PEmax.vs.PE6max_editor.diffexp)[1]
+n <- dim(PE6max.vs.PEmax_editor.diffexp)[1]
 A <- PE6max.vs.PE6max.mut_editor.genes
-B <- PEmax.vs.PE6max_editor.genes
+B <- PE6max.vs.PEmax_editor.genes
 
 ct <- matrix(
-  c(n - length(union(A,B)),
-    length(setdiff(A,B)),
-    length(setdiff(B,A)),
-    length(intersect(A,B))),
-  nrow = 2)
+  c(
+    n - length(union(A, B)),
+    length(setdiff(A, B)),
+    length(setdiff(B, A)),
+    length(intersect(A, B))
+  ),
+  nrow = 2
+)
 
 ct
 
-fisher.test(ct, alternative="greater")
+fisher.test(ct, alternative = "greater")
 ```
 
 ## MA Plots
 
 ```{r}
-PEmax.vs.PE6max.mut_editor.maplot <- ggpubr::ggmaplot(
-  PEmax.vs.PE6max.mut_editor.diffexp,
+PE6max.vs.PEmax.mut_editor.maplot <- ggpubr::ggmaplot(
+  PE6max.vs.PEmax.mut_editor.diffexp,
   fdr = 0.05,
   size = 0.5,
   ylim = c(-1, 1),
   fc = 1,
-  genenames = PEmax.vs.PE6max.mut_editor.diffexp$gene,
+  genenames = PE6max.vs.PEmax.mut_editor.diffexp$gene,
   top = 0,
-  main = "HEK3: PEmax vs PE6max Mutant") +
+  main = "HEK3: PEmax vs PE6max Mutant"
+) +
   ggplot2::theme(legend.position = c(0.1, 0.9)) # +
 
-PEmax.vs.PE6max.mut_editor.maplot
+PE6max.vs.PEmax.mut_editor.maplot
 
-ggplot2::ggsave("PEmax.vs.PE6max.mut_editor.maplot.pdf")
+ggplot2::ggsave("PE6max.vs.PEmax.mut_editor.maplot.pdf")
 ```
 
 ```{r}
@@ -118,35 +123,47 @@ PE6max.vs.PE6max.mut_editor.maplot <- ggpubr::ggmaplot(
   ylim = c(-1, 1),
   fc = 1,
   genenames = PE6max.vs.PE6max.mut_editor.diffexp$gene,
-  label.select = genes.to.label,
-  label.rectangle = FALSE,
-  font.label = c(8, "plain", "#333333"),
-  main = "HEK3: PE6max vs PE6max Mutant") +
-  ggplot2::theme(legend.position = c(0.1, 0.9))
+  top = 0,
+  main = "HEK3: PE6max vs PE6max Mutant"
+) +
+  ggplot2::theme(legend.position = c(0.1, 0.9)) +
+  ggrepel::geom_text_repel(
+    data = PE6max.vs.PEmax_editor.diffexp %>% filter(gene %in% genes.to.label),
+    aes(label = gene, x = log2(baseMean), y = log2FoldChange),
+    size = 3, color = "#333333",
+    min.segment.length = 0,
+    max.overlaps = NA
+  )
 
 PE6max.vs.PE6max.mut_editor.maplot
 
 ggplot2::ggsave(
-  filename = "PE6max.vs.PE6max.mut_editor.maplot.pdf")
+  filename = "PE6max.vs.PE6max.mut_editor.maplot.pdf"
+)
 ```
 
 
 ```{r}
-PEmax.vs.PE6max_editor.maplot <- ggpubr::ggmaplot(
-  PEmax.vs.PE6max_editor.diffexp,
+PE6max.vs.PEmax_editor.maplot <- ggpubr::ggmaplot(
+  PE6max.vs.PEmax_editor.diffexp,
   fdr = 0.05,
   size = 0.5,
   ylim = c(-1, 1),
   fc = 1,
-  genenames = PEmax.vs.PE6max_editor.diffexp$gene,
-  label.select = genes.to.label,
-  label.rectangle = FALSE,
-  font.label = c(8, "plain", "#333333"),
-  main = "HEK3: PEmax vs PE6max") +
-  ggplot2::theme(legend.position = c(0.1, 0.9))
+  genenames = PE6max.vs.PEmax_editor.diffexp$gene,
+  top = 0,
+  main = "HEK3: PE6max vs PEmax"
+) +
+  ggplot2::theme(legend.position = c(0.1, 0.9)) +
+  ggrepel::geom_text_repel(
+    data = PE6max.vs.PEmax_editor.diffexp %>% filter(gene %in% genes.to.label),
+    aes(label = gene, x = log2(baseMean), y = log2FoldChange),
+    size = 3, color = "#333333",
+    min.segment.length = 0,
+    max.overlaps = NA
+  )
 
-PEmax.vs.PE6max_editor.maplot
+PE6max.vs.PEmax_editor.maplot
 
-ggplot2::ggsave("PEmax.vs.PE6max_editor.maplot.pdf")
+ggplot2::ggsave("PE6max.vs.PEmax_editor.maplot.pdf")
 ```
-
