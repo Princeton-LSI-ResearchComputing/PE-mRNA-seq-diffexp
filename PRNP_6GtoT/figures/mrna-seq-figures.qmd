@@ -22,43 +22,52 @@ library(ggvenn)
 ### Configuration
 
 ```{r}
+locus <- "PRNP"
 results_dir <- file.path("..", "results")
+contrasts <- c(
+  "PEmax.vs.PE6max.mut_editor",
+  "PE6max.vs.PE6max.mut_editor",
+  "PE6max.vs.PEmax_editor"
+)
 ```
 
 ### Load data
 
 ```{r}
 all <- readRDS(file.path(results_dir, "deseq2", "all.rds"))
-PEmax.vs.PE6max.mut_editor.diffexp <-
-  read_tsv(file.path(results_dir, "diffexp", "PEmax-vs-PE6max-mut_editor.diffexp.symbol.tsv"))
-PE6max.vs.PE6max.mut_editor.diffexp <-
-  read_tsv(file.path(results_dir, "diffexp", "PE6max-vs-PE6max-mut_editor.diffexp.symbol.tsv"))
-PE6max.vs.PEmax_editor.diffexp <-
-  read_tsv(file.path(results_dir, "diffexp", "PE6max-vs-PEmax_editor.diffexp.symbol.tsv"))
+for (contrast in contrasts) {
+  assign(
+    paste0(contrast, ".diffexp"),
+    read_tsv(file.path(
+      results_dir, "diffexp",
+      paste0(
+        stringr::str_replace_all(contrast, "\\.", "-"),
+        ".diffexp.symbol.tsv"
+      )
+    ))
+  )
+}
 ```
 
-## Venn Diagrams
+## Venn Diagram
 
 ```{r}
-# Generate 3 sets of 200 words
-PEmax.vs.PE6max.mut_editor.genes <-
-  PEmax.vs.PE6max.mut_editor.diffexp %>%
-  dplyr::filter(padj <= 0.05) %>%
-  pull(gene)
-PE6max.vs.PE6max.mut_editor.genes <-
-  PE6max.vs.PE6max.mut_editor.diffexp %>%
-  dplyr::filter(padj <= 0.05) %>%
-  pull(gene)
-PE6max.vs.PEmax_editor.genes <-
-  PE6max.vs.PEmax_editor.diffexp %>%
-  dplyr::filter(padj <= 0.05) %>%
-  pull(gene)
+for (contrast in contrasts) {
+  assign(
+    paste0(contrast, ".genes"),
+    get(paste0(contrast, ".diffexp")) %>%
+      dplyr::filter(padj <= 0.05) %>%
+      pull(gene)
+  )
+}
 
-x <- list(
-  "PEmax vs PE6max Mutant" = PEmax.vs.PE6max.mut_editor.genes,
-  "PE6max vs PE6max Mutant" = PE6max.vs.PE6max.mut_editor.genes,
-  "PE6max vs PEmax" = PE6max.vs.PEmax_editor.genes
-)
+list.names <- contrasts %>%
+  stringr::str_replace_all("\\.", " ") %>%
+  stringr::str_replace_all("mut", "Mutant") %>%
+  stringr::str_replace_all("_editor", "")
+
+x <- lapply(paste0(contrasts, ".genes"), get)
+names(x) <- list.names
 
 venn.plot <- ggvenn(
   x,
@@ -98,72 +107,100 @@ fisher.test(ct, alternative = "greater")
 ## MA Plots
 
 ```{r}
-PEmax.vs.PE6max.mut_editor.maplot <- ggpubr::ggmaplot(
-  PEmax.vs.PE6max.mut_editor.diffexp,
-  fdr = 0.05,
-  size = 0.5,
-  ylim = c(-1, 1),
-  fc = 1,
-  genenames = PEmax.vs.PE6max.mut_editor.diffexp$gene,
-  top = 0,
-  main = "PRNP: PEmax vs PE6max Mutant"
-) +
-  ggplot2::theme(legend.position = c(0.1, 0.9)) # +
+contrast <- "PEmax.vs.PE6max.mut_editor"
 
-PEmax.vs.PE6max.mut_editor.maplot
-
-ggplot2::ggsave("PEmax.vs.PE6max.mut_editor.maplot.pdf")
-```
-
-```{r}
-PE6max.vs.PE6max.mut_editor.maplot <- ggpubr::ggmaplot(
-  PE6max.vs.PE6max.mut_editor.diffexp,
-  size = 0.5,
-  fdr = 0.05,
-  ylim = c(-1, 1),
-  fc = 1,
-  genenames = PE6max.vs.PE6max.mut_editor.diffexp$gene,
-  top = 0,
-  main = "HEK3: PE6max vs PE6max Mutant"
-) +
-  ggplot2::theme(legend.position = c(0.1, 0.9)) +
-  ggrepel::geom_text_repel(
-    data = PE6max.vs.PE6max.mut_editor.diffexp %>% filter(gene %in% genes.to.label),
-    aes(label = gene, x = log2(baseMean), y = log2FoldChange),
-    size = 3, color = "#333333",
-    min.segment.length = 0,
-    max.overlaps = NA
-  )
-
-PE6max.vs.PE6max.mut_editor.maplot
-
-ggplot2::ggsave(
-  filename = "PE6max.vs.PE6max.mut_editor.maplot.pdf"
+assign(
+  paste0(contrast, ".maplot"),
+  ggpubr::ggmaplot(
+    get(paste0(contrast, ".diffexp")),
+    fdr = 0.05,
+    size = 0.5,
+    ylim = c(-1, 1),
+    fc = 1,
+    genenames = get(paste0(contrast, ".diffexp"))$gene,
+    top = 0,
+    main = paste0(
+      locus, ": ",
+      contrast %>%
+        stringr::str_replace_all("\\.", " ") %>%
+        stringr::str_replace_all("mut", "Mutant") %>%
+        stringr::str_replace_all("_editor", "")
+    )
+  ) +
+    ggplot2::theme(legend.position = c(0.1, 0.9))
 )
+get(paste0(contrast, ".maplot"))
+
+ggplot2::ggsave(paste0(contrast, ".maplot.pdf"))
+```
+
+```{r}
+contrast <- "PE6max.vs.PE6max.mut_editor"
+
+assign(
+  paste0(contrast, ".maplot"),
+  ggpubr::ggmaplot(
+    get(paste0(contrast, ".diffexp")),
+    fdr = 0.05,
+    size = 0.5,
+    ylim = c(-1, 1),
+    fc = 1,
+    genenames = get(paste0(contrast, ".diffexp"))$gene,
+    top = 0,
+    main = paste0(
+      locus, ": ",
+      contrast %>%
+        stringr::str_replace_all("\\.", " ") %>%
+        stringr::str_replace_all("mut", "Mutant") %>%
+        stringr::str_replace_all("_editor", "")
+    )
+  ) +
+    ggplot2::theme(legend.position = c(0.1, 0.9)) +
+    ggrepel::geom_text_repel(
+      data = get(paste0(contrast, ".diffexp")) %>% filter(gene %in% genes.to.label),
+      aes(label = gene, x = log2(baseMean), y = log2FoldChange),
+      size = 3, color = "#333333",
+      min.segment.length = 0,
+      max.overlaps = NA
+    )
+)
+get(paste0(contrast, ".maplot"))
+
+ggplot2::ggsave(paste0(contrast, ".maplot.pdf"))
 ```
 
 
 ```{r}
-PE6max.vs.PEmax_editor.maplot <- ggpubr::ggmaplot(
-  PE6max.vs.PEmax_editor.diffexp,
-  fdr = 0.05,
-  size = 0.5,
-  ylim = c(-1, 1),
-  fc = 1,
-  genenames = PE6max.vs.PEmax_editor.diffexp$gene,
-  top = 0,
-  main = "HEK3: PE6max vs PEmax"
-) +
-  ggplot2::theme(legend.position = c(0.1, 0.9)) +
-  ggrepel::geom_text_repel(
-    data = PE6max.vs.PEmax_editor.diffexp %>% filter(gene %in% genes.to.label),
-    aes(label = gene, x = log2(baseMean), y = log2FoldChange),
-    size = 3, color = "#333333",
-    min.segment.length = 0,
-    max.overlaps = NA
-  )
+contrast <- "PE6max.vs.PEmax_editor"
 
-PE6max.vs.PEmax_editor.maplot
+assign(
+  paste0(contrast, ".maplot"),
+  ggpubr::ggmaplot(
+    get(paste0(contrast, ".diffexp")),
+    fdr = 0.05,
+    size = 0.5,
+    ylim = c(-1, 1),
+    fc = 1,
+    genenames = get(paste0(contrast, ".diffexp"))$gene,
+    top = 0,
+    main = paste0(
+      locus, ": ",
+      contrast %>%
+        stringr::str_replace_all("\\.", " ") %>%
+        stringr::str_replace_all("mut", "Mutant") %>%
+        stringr::str_replace_all("_editor", "")
+    )
+  ) +
+    ggplot2::theme(legend.position = c(0.1, 0.9)) +
+    ggrepel::geom_text_repel(
+      data = get(paste0(contrast, ".diffexp")) %>% filter(gene %in% genes.to.label),
+      aes(label = gene, x = log2(baseMean), y = log2FoldChange),
+      size = 3, color = "#333333",
+      min.segment.length = 0,
+      max.overlaps = NA
+    )
+)
+get(paste0(contrast, ".maplot"))
 
-ggplot2::ggsave("PE6max.vs.PEmax_editor.maplot.pdf")
+ggplot2::ggsave(paste0(contrast, ".maplot.pdf"))
 ```
