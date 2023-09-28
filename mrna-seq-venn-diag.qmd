@@ -46,7 +46,6 @@ for (edit in edits) {
     )
   }
 }
-
 ```
 
 ## Venn Diagram
@@ -66,18 +65,21 @@ for (edit in edits) {
 for (contrast in contrasts) {
   gene.lists <- lapply(paste0(edits, "_", contrast, ".genes"), get)
   names(gene.lists) <- edits
-  
+
   sink(file.path(output_dir, paste0(contrast, "_gene-lists.txt")))
   print(gene.lists)
   sink()
-  
+
   gene.counts <- sapply(gene.lists, length)
-  venn.diag <- plot(euler(gene.counts), quantities = TRUE, main = contrast)
-  
+  venn.diag <- plot(euler(gene.counts), 
+                    quantities = TRUE, 
+                    fill = c("#0073C2FF", "#EFC000FF"),
+                    main = contrast)
+
   pdf(file.path(output_dir, paste0(contrast, "_venn-diagram.pdf")))
   plot(venn.diag)
   dev.off()
-  
+
   plot(venn.diag)
 }
 ```
