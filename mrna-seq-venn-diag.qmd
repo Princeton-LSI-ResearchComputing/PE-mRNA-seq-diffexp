@@ -1,0 +1,83 @@
+---
+title: "mrna-seq-venn-diagrams"
+author: "Lance Parsons"
+format: html
+---
+
+## Setup
+
+### Load libraries
+
+```{r}
+# install.packages("renv")
+# renv::restore()
+library(readr)
+library(dplyr)
+library(eulerr)
+```
+
+### Configuration
+
+```{r}
+edits <- c("HEK3_1TtoA", "PRNP_6GtoT")
+contrasts <- c(
+  "PEmax.vs.PE6max.mut_editor",
+  "PE6max.vs.PE6max.mut_editor",
+  "PE6max.vs.PEmax_editor"
+)
+output_dir <- "venn-diagrams"
+dir.create(output_dir, showWarnings = FALSE)
+```
+
+### Load data
+
+```{r}
+for (edit in edits) {
+  for (contrast in contrasts) {
+    assign(
+      paste0(edit, "_", contrast, ".diffexp"),
+      read_tsv(file.path(
+        edit, "results", "diffexp",
+        paste0(
+          stringr::str_replace_all(contrast, "\\.", "-"),
+          ".diffexp.symbol.tsv"
+        )
+      ))
+    )
+  }
+}
+
+```
+
+## Venn Diagram
+
+```{r}
+for (edit in edits) {
+  for (contrast in contrasts) {
+    assign(
+      paste0(edit, "_", contrast, ".genes"),
+      get(paste0(edit, "_", contrast, ".diffexp")) %>%
+        dplyr::filter(padj <= 0.05) %>%
+        pull(gene)
+    )
+  }
+}
+
+for (contrast in contrasts) {
+  gene.lists <- lapply(paste0(edits, "_", contrast, ".genes"), get)
+  names(gene.lists) <- edits
+  
+  sink(file.path(output_dir, paste0(contrast, "_gene-lists.txt")))
+  print(gene.lists)
+  sink()
+  
+  gene.counts <- sapply(gene.lists, length)
+  venn.diag <- plot(euler(gene.counts), quantities = TRUE, main = contrast)
+  
+  pdf(file.path(output_dir, paste0(contrast, "_venn-diagram.pdf")))
+  plot(venn.diag)
+  dev.off()
+  
+  plot(venn.diag)
+}
+```

@@ -2,7 +2,9 @@
 logs/
 report*.zip
 pe-mrna-diffexp-*.zip
-package_*.sh
+venn-diagrams/
+mrna-seq-venn-diag_files/
+mrna-seq-venn-diag.html
 resources/
 data/
 results/
