@@ -74,7 +74,10 @@ for (contrast in contrasts) {
   print(list(intersection = intersect(gene.lists[[1]], gene.lists[[2]])))
   sink()
 
-  gene.counts[[contrast]] <- sapply(gene.lists, length)
+  gene.counts[[contrast]] <- append(
+    sapply(gene.lists, length),
+    list("intersection" = length(intersect(gene.lists[[1]], gene.lists[[2]])))
+  )
   venn.diagrams[[contrast]] <- plot(euler(gene.lists),
     quantities = TRUE,
     fill = c("#0073C2FF", "#EFC000FF"),
@@ -89,10 +92,32 @@ for (contrast in contrasts) {
   plot(venn.diagrams[[contrast]])
 }
 ```
+
+
 ```{r, fig.width=20}
+venn.counts <- list()
+
+for (contrast in contrasts) {
+  venn.counts[[paste0(contrast, ":", edits[1])]] <- gene.counts[[contrast]][[edits[1]]]
+  venn.counts[[paste0(contrast, ":", edits[2])]] <- gene.counts[[contrast]][[edits[2]]]
+  venn.counts[[
+    paste0(
+      paste0(contrast, ":", edits[1]),
+      "&",
+      paste0(contrast, ":", edits[2])
+    )
+  ]] <- gene.counts[[contrast]][["intersection"]]
+}
+
 pdf(file.path(output_dir, "venn-diagrams-to-scale.pdf"))
-venn.diags.scaled <- plot(euler(c("a" = 1, "b" = 23, "a&b" = 1, "c" = 90, "d" = 182, "c&d" = 22, "e" = 95, "f" = 35, "e&f" = 5)), quantities = TRUE)
-plot(venn.diags.scaled)
+venn.diagrams.scaled <-
+  plot(
+    euler(unlist(venn.counts)),
+    quantities = TRUE,
+    fill = rep(c("#0073C2FF", "#EFC000FF"), 3)
+  )
+venn.diagrams.scaled
 dev.off()
-plot(venn.diags.scaled)
+
+venn.diagrams.scaled
 ```
