@@ -14,6 +14,7 @@ format: html
 library(readr)
 library(dplyr)
 library(eulerr)
+library(gridExtra)
 ```
 
 ### Configuration
@@ -62,24 +63,36 @@ for (edit in edits) {
   }
 }
 
+venn.diagrams <- list()
+gene.counts <- list()
 for (contrast in contrasts) {
   gene.lists <- lapply(paste0(edits, "_", contrast, ".genes"), get)
   names(gene.lists) <- edits
 
   sink(file.path(output_dir, paste0(contrast, "_gene-lists.txt")))
   print(gene.lists)
+  print(list(intersection = intersect(gene.lists[[1]], gene.lists[[2]])))
   sink()
 
-  gene.counts <- sapply(gene.lists, length)
-  venn.diag <- plot(euler(gene.counts), 
-                    quantities = TRUE, 
-                    fill = c("#0073C2FF", "#EFC000FF"),
-                    main = contrast)
+  gene.counts[[contrast]] <- sapply(gene.lists, length)
+  venn.diagrams[[contrast]] <- plot(euler(gene.lists),
+    quantities = TRUE,
+    fill = c("#0073C2FF", "#EFC000FF"),
+    main = contrast,
+    xlim = 100
+  )
 
   pdf(file.path(output_dir, paste0(contrast, "_venn-diagram.pdf")))
-  plot(venn.diag)
+  plot(venn.diagrams[[contrast]])
   dev.off()
 
-  plot(venn.diag)
+  plot(venn.diagrams[[contrast]])
 }
+```
+```{r, fig.width=20}
+pdf(file.path(output_dir, "venn-diagrams-to-scale.pdf"))
+venn.diags.scaled <- plot(euler(c("a" = 1, "b" = 23, "a&b" = 1, "c" = 90, "d" = 182, "c&d" = 22, "e" = 95, "f" = 35, "e&f" = 5)), quantities = TRUE)
+plot(venn.diags.scaled)
+dev.off()
+plot(venn.diags.scaled)
 ```
