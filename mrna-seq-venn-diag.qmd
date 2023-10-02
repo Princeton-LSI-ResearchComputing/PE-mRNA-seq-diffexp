@@ -98,8 +98,8 @@ for (contrast in contrasts) {
 venn.counts <- list()
 
 for (contrast in contrasts) {
-  venn.counts[[paste0(contrast, ":", edits[1])]] <- gene.counts[[contrast]][[edits[1]]]
-  venn.counts[[paste0(contrast, ":", edits[2])]] <- gene.counts[[contrast]][[edits[2]]]
+  venn.counts[[paste0(contrast, ":", edits[1])]] <- gene.counts[[contrast]][[edits[1]]] - gene.counts[[contrast]][["intersection"]]
+  venn.counts[[paste0(contrast, ":", edits[2])]] <- gene.counts[[contrast]][[edits[2]]] - gene.counts[[contrast]][["intersection"]]
   venn.counts[[
     paste0(
       paste0(contrast, ":", edits[1]),
@@ -109,7 +109,7 @@ for (contrast in contrasts) {
   ]] <- gene.counts[[contrast]][["intersection"]]
 }
 
-pdf(file.path(output_dir, "venn-diagrams-to-scale.pdf"))
+pdf(file.path(output_dir, "venn-diagrams-to-scale.pdf"), width = 14, height = 10)
 venn.diagrams.scaled <-
   plot(
     euler(unlist(venn.counts)),
