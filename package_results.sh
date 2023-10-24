@@ -1,7 +1,12 @@
 #!/usr/bin/env bash
 set -euxo pipefail
 
-NOW=$(date +"%Y-%m-%d")
-ZIPFILE="pe-mrna-diffexp-results-$NOW.zip"
+awk -v OFS='\t' '
+    NR == 1 { print "\"comparison\"", $0 }
+    FNR > 1 { gsub(/^\.\/|results\/diffexp\/|\.diffexp\.tsv$/,"",FILENAME); print FILENAME, $0 }
+' ./*"/results/diffexp/"*.diffexp.tsv > "all-comparisons.diffexp.tsv"
 
-find . -regex ".*report\.zip\|.*multiqc_report\.html" | tar czvf "${ZIPFILE}" --files-from -
+NOW=$(date +"%Y-%m-%d")
+ARCHIVEFILE="pe-mrna-diffexp-results-$NOW.tar.gz"
+
+find . -regex ".*report\.zip\|.*multiqc_report\.html\|.*all-comparisons\.diffexp\.tsv" | tar czvf "${ARCHIVEFILE}" --files-from -
