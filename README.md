@@ -1,6 +1,6 @@
 # mRNA-Seq Workflow
 
-[![DOI](https://zenodo.org/badge/)](https://zenodo.org/badge/latestdoi/)
+[![DOI](https://zenodo.org/badge/693801261.svg)](https://zenodo.org/doi/10.5281/zenodo.10295805)
 
 Workflow for the analysis of mRNA-seq data for Yan et. al, "An endogenous
 small RNA-binding protein safeguards prime editing" (in press).
