@@ -137,6 +137,21 @@ assign(
 get(paste0(contrast, ".maplot"))
 
 ggplot2::ggsave(paste0(contrast, ".maplot.pdf"))
+
+ggplot2::ggsave(
+  paste0(contrast, ".nolabels.maplot.pdf"),
+  get(paste0(contrast, ".maplot")) +
+    theme(
+      axis.title.x = element_blank(),
+      axis.text.x = element_blank(),
+      # axis.ticks.x = element_blank(),
+      axis.title.y = element_blank(),
+      axis.text.y = element_blank(),
+      # axis.ticks.y = element_blank(),
+      plot.title = element_blank(),
+      legend.position = "none"
+    )
+)
 ```
 
 ```{r}
@@ -176,6 +191,21 @@ assign(
 get(paste0(contrast, ".maplot"))
 
 ggplot2::ggsave(paste0(contrast, ".maplot.pdf"))
+
+ggplot2::ggsave(
+  paste0(contrast, ".nolabels.maplot.pdf"),
+  get(paste0(contrast, ".maplot")) +
+    theme(
+      axis.title.x = element_blank(),
+      axis.text.x = element_blank(),
+      # axis.ticks.x = element_blank(),
+      axis.title.y = element_blank(),
+      axis.text.y = element_blank(),
+      # axis.ticks.y = element_blank(),
+      plot.title = element_blank(),
+      legend.position = "none"
+    )
+)
 ```
 
 
@@ -216,4 +246,19 @@ assign(
 get(paste0(contrast, ".maplot"))
 
 ggplot2::ggsave(paste0(contrast, ".maplot.pdf"))
+
+ggplot2::ggsave(
+  paste0(contrast, ".nolabels.maplot.pdf"),
+  get(paste0(contrast, ".maplot")) +
+    theme(
+      axis.title.x = element_blank(),
+      axis.text.x = element_blank(),
+      # axis.ticks.x = element_blank(),
+      axis.title.y = element_blank(),
+      axis.text.y = element_blank(),
+      # axis.ticks.y = element_blank(),
+      plot.title = element_blank(),
+      legend.position = "none"
+    )
+)
 ```
