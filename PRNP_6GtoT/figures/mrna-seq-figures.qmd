@@ -116,7 +116,7 @@ assign(
     get(paste0(contrast, ".diffexp")),
     fdr = 0.05,
     size = 0.5,
-    ylim = c(-1, 1),
+    ylim = c(-1, 1.5),
     fc = 1,
     genenames = get(paste0(contrast, ".diffexp"))$gene,
     top = 0,
