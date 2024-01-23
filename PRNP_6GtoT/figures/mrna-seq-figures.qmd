@@ -110,13 +110,17 @@ fisher.test(ct, alternative = "greater")
 ```{r}
 contrast <- "PEmax.vs.PE6max.mut_editor"
 
+# Check that all points lie between ylimits 
+ylimits <- c(-1, 1.5)
+stopifnot(all(between(get(paste0(contrast, ".diffexp"))$log2FoldChange, ylimits[1], ylimits[2])))
+
 assign(
   paste0(contrast, ".maplot"),
   ggpubr::ggmaplot(
     get(paste0(contrast, ".diffexp")),
     fdr = 0.05,
     size = 0.5,
-    ylim = c(-1, 1.5),
+    ylim = ylimits,
     fc = 1,
     genenames = get(paste0(contrast, ".diffexp"))$gene,
     top = 0,
@@ -157,13 +161,17 @@ ggplot2::ggsave(
 ```{r}
 contrast <- "PE6max.vs.PE6max.mut_editor"
 
+# Check that all points lie between ylimits 
+ylimits <- c(-1, 3)
+stopifnot(all(between(get(paste0(contrast, ".diffexp"))$log2FoldChange, ylimits[1], ylimits[2])))
+
 assign(
   paste0(contrast, ".maplot"),
   ggpubr::ggmaplot(
     get(paste0(contrast, ".diffexp")),
     fdr = 0.05,
     size = 0.5,
-    ylim = c(-1, 1),
+    ylim = ylimits,
     fc = 1,
     genenames = get(paste0(contrast, ".diffexp"))$gene,
     top = 0,
@@ -212,13 +220,17 @@ ggplot2::ggsave(
 ```{r}
 contrast <- "PE6max.vs.PEmax_editor"
 
+# Check that all points lie between ylimits 
+ylimits <- c(-1, 1)
+stopifnot(all(between(get(paste0(contrast, ".diffexp"))$log2FoldChange, ylimits[1], ylimits[2])))
+
 assign(
   paste0(contrast, ".maplot"),
   ggpubr::ggmaplot(
     get(paste0(contrast, ".diffexp")),
     fdr = 0.05,
     size = 0.5,
-    ylim = c(-1, 1),
+    ylim = ylimits,
     fc = 1,
     genenames = get(paste0(contrast, ".diffexp"))$gene,
     top = 0,
